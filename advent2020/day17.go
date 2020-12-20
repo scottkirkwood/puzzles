@@ -220,11 +220,11 @@ func read(fname string) (cube, error) {
 func main() {
 	flag.Parse()
 
-	fmt.Printf("Day 9\n")
+	fmt.Printf("Day 17\n")
 
-	infile := "day9.input"
+	infile := "day17.input"
 	if *testFileFlag {
-		infile = "day9-sample.input"
+		infile = "day17-sample.input"
 	}
 	start, err := read(infile)
 	if err != nil {
