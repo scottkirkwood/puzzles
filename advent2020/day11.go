@@ -65,18 +65,20 @@ func (f *floor) want(x, y int) byte {
 		return ch
 	}
 	numOccupied := 0
+	max := f.width
+	if f.height > max {
+		max = f.height
+	}
 	for dy := -1; dy <= 1; dy++ {
 		for dx := -1; dx <= 1; dx++ {
 			if dx == 0 && dy == 0 {
 				continue
 			}
-			if f.get(x+dx, y+dy) == '#' {
-				numOccupied++
-			}
+			numOccupied += f.hitOccupied(x, y, dx, dy)
 		}
 	}
 	if ch == '#' {
-		if numOccupied >= 4 {
+		if numOccupied >= 5 {
 			return 'L'
 		}
 		return '#'
@@ -87,15 +89,36 @@ func (f *floor) want(x, y int) byte {
 	return ch
 }
 
+func (f *floor) hitOccupied(x, y, dx, dy int) int {
+	for {
+		x += dx
+		y += dy
+		if f.outOfBounds(x, y) {
+			return 0
+		}
+		if f.get(x, y) == '#' {
+			return 1
+		}
+		if f.get(x, y) == 'L' {
+			return 0
+		}
+	}
+	return 0
+}
+
+func (f *floor) outOfBounds(x, y int) bool {
+	return x >= f.width || y >= len(f.rows) || y < 0 || x < 0
+}
+
 func (f *floor) get(x, y int) byte {
-	if x >= f.width || y >= len(f.rows) || y < 0 || x < 0 {
+	if f.outOfBounds(x, y) {
 		return '.'
 	}
 	return f.rows[y][x]
 }
 
 func (f *floor) set(x, y int, b byte) {
-	if x >= f.width || y >= len(f.rows) || y < 0 || x < 0 {
+	if f.outOfBounds(x, y) {
 		return
 	}
 	f.rows[y][x] = b
@@ -178,6 +201,5 @@ func main() {
 			break
 		}
 	}
-	// 920  too low
 	fmt.Printf("Num occupied %d\n", w.numOccupied())
 }
