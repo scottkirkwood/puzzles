@@ -9,17 +9,25 @@ import (
 
 var testFileFlag = flag.Bool("t", false, "Use the test file")
 
+<<<<<<< HEAD
 type group struct {
 	question map[string]bool
 }
 
 func read(fname string) ([]group, error) {
+=======
+type rows struct {
+}
+
+func read(fname string) (rows, error) {
+>>>>>>> 030b4cb6bc9e133f715cce803fd2bcf3e3ccaeb4
 	file, err := os.Open(fname)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 
+<<<<<<< HEAD
 	ret := []group{}
 	scanner := bufio.NewScanner(file)
 
@@ -53,12 +61,20 @@ func read(fname string) ([]group, error) {
 		}
 	}
 	ret = append(ret, prev)
+=======
+	ret := make(rows, 0, 323)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		ret = append(ret, scanner.Text())
+	}
+>>>>>>> 030b4cb6bc9e133f715cce803fd2bcf3e3ccaeb4
 	if err := scanner.Err(); err != nil {
 		return ret, err
 	}
 	return ret, nil
 }
 
+<<<<<<< HEAD
 func sumCounts(groups []group) int {
 	counts := 0
 	for _, group := range groups {
@@ -82,15 +98,21 @@ func sumCounts2(groups []group) int {
 	return count
 }
 
+=======
+>>>>>>> 030b4cb6bc9e133f715cce803fd2bcf3e3ccaeb4
 func main() {
 	flag.Parse()
 
 	fmt.Printf("Day 6\n")
+<<<<<<< HEAD
 
+=======
+>>>>>>> 030b4cb6bc9e133f715cce803fd2bcf3e3ccaeb4
 	infile := "day6.input"
 	if *testFileFlag {
 		infile = "day6-sample.input"
 	}
+<<<<<<< HEAD
 	groups, err := read(infile)
 	if err != nil {
 		fmt.Printf("Err: %v\n", err)
@@ -98,4 +120,6 @@ func main() {
 	}
 	fmt.Printf("Rows %d\n", len(groups))
 	fmt.Printf("Sum: %d\n", sumCounts(groups))
+=======
+>>>>>>> 030b4cb6bc9e133f715cce803fd2bcf3e3ccaeb4
 }
