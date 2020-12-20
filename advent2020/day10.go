@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -37,30 +38,30 @@ func read(fname string) ([]int, error) {
 	return ret, nil
 }
 
-func deviceJoltage(nums []int) int {
-	max := 0
-	for _, num := range nums {
-		if num > max {
-			max = num
-		}
-	}
-	return max + 3
-}
-
 type jolty struct {
 	deviceJolts int
-	done        map[int]bool
-	nums        []int
+	orig        []int
+	nums        []bool
 	quit        bool
 	sequence    []int
 }
 
 func newJolty(nums []int) jolty {
-	return jolty{
-		nums:        nums,
-		done:        make(map[int]bool, len(nums)),
-		deviceJolts: deviceJoltage(nums),
+	sort.Ints(nums)
+	max := nums[len(nums)-1]
+
+	j := jolty{
+		orig:        nums,
+		deviceJolts: max+3,
+		nums:        make([]bool, max+1),
 	}
+	for _, v := range nums {
+		if j.nums[v] {
+			fmt.Printf("Duplicate value at %d\n", v)
+		}
+		j.nums[v] = true
+	}
+	return j
 }
 
 func (j *jolty) doChain(need int) {
@@ -84,30 +85,29 @@ func (j *jolty) doChain(need int) {
 		if j.quit {
 			return
 		}
-		diff := j.nums[p] - need
-
-		j.done[p] = true
+		diff := p - need
+		j.nums[p] = false
 		j.sequence = append(j.sequence, p)
 		j.doChain(need + diff)
 		j.sequence = j.sequence[:len(j.sequence)-1]
-		j.done[p] = false
+		j.nums[p] = true
 	}
 }
 
 func (j *jolty) visitedAll() bool {
-	return len(j.sequence) == len(j.nums)
+	return len(j.sequence) == len(j.orig)
 }
 
-func (j *jolty) findPossible(need int) (ret []int) {
-	for i := 0; i < len(j.nums); i++ {
-		if j.done[i] {
-			continue
-		}
-		if j.nums[i] == need+1 ||
-			j.nums[i] == need+2 ||
-			j.nums[i] == need+3 {
-			ret = append(ret, i)
-		}
+func (j *jolty) findPossible(need int) []int {
+	ret := make([]int, 0, 3)
+	if need+1 < len(j.nums) && j.nums[need+1] {
+		ret = append(ret, need+1)
+	}
+	if need+2 < len(j.nums) && j.nums[need+2] {
+		ret = append(ret, need+2)
+	}
+	if need+3 < len(j.nums) && j.nums[need+3] {
+		ret = append(ret, need+3)
 	}
 	return ret
 }
@@ -117,7 +117,7 @@ func (j *jolty) printSummary() {
 	numOnes := 0
 	numThrees := 0
 	for _, s := range j.sequence {
-		val := j.nums[s]
+		val := s
 		diff := val - jolts
 		if diff == 1 {
 			numOnes++
