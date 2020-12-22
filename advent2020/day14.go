@@ -21,13 +21,20 @@ type machine struct {
 
 func (m *machine) evaluate(inst instruction) {
 	if inst.memLoc > 0 {
-		oldVal := m.mem[inst.memLoc]
-		val := oldVal & m.bitsToKeep()
-		val |= (val&m.bitsToZero() | (m.bitsToSet() & inst.val))
+		//oldVal := m.mem[inst.memLoc]
+		val := inst.val & m.bitsToKeep()
+		val |= m.bitsToSet()
 		m.mem[inst.memLoc] = val
 	} else {
 		m.curMask = inst.mask
 	}
+}
+
+func (m *machine) sum() (ret int64) {
+	for _, v := range m.mem {
+		ret += v
+	}
+	return ret
 }
 
 func (m machine) String(inst instruction) string {
@@ -162,4 +169,5 @@ func main() {
 			fmt.Printf("%s\n\n", m.String(inst))
 		}
 	}
+	fmt.Printf("Mem sum %d\n", m.sum())
 }
