@@ -39,6 +39,10 @@ func (p *problem) setRegex(regex string) (err error) {
 	return err
 }
 
+func (p *problem) setRule(key int, s subMatch) {
+	p.rules[key] = s
+}
+
 func (p problem) recurse(rule int) string {
 	if p.rules[rule].char != "" {
 		return p.rules[rule].char
@@ -153,6 +157,8 @@ func main() {
 		return
 	}
 	fmt.Printf("Problem rules %d\n", len(p.rules))
+	p.setRule(8, subMatch{match1: []int{42}, match2: []int{42, 8}})
+	p.setRule(11, subMatch{match1: []int{42, 31}, match2: []int{42, 11, 31}})
 	regexStr := p.recurse(0)
 	fmt.Printf("Calculated regex %q\n", regexStr)
 	if err := p.setRegex(regexStr); err != nil {
