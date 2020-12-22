@@ -35,7 +35,7 @@ func (p problem) match(message string) bool {
 }
 
 func (p *problem) setRegex(regex string) (err error) {
-	p.rx, err = regexp.Compile(regex)
+	p.rx, err = regexp.Compile("^" + regex + "$")
 	return err
 }
 
@@ -153,8 +153,10 @@ func main() {
 		return
 	}
 	fmt.Printf("Problem rules %d\n", len(p.rules))
-	if err := p.setRegex(p.recurse(0)); err != nil {
-		fmt.Printf("Problem compiling %q: %v\n", p.recurse(0), err)
+	regexStr := p.recurse(0)
+	fmt.Printf("Calculated regex %q\n", regexStr)
+	if err := p.setRegex(regexStr); err != nil {
+		fmt.Printf("Problem compiling %q: %v\n", regexStr, err)
 	}
 	countMatches := 0
 	for _, message := range p.messages {
