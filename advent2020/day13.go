@@ -13,26 +13,33 @@ var (
 	testFileFlag = flag.Bool("t", false, "Use the test file")
 )
 
-type busCalc struct {
-	ts    int
-	buses []int
+type busDelta struct {
+	bus   int
+	delta int
 }
 
-func (b busCalc) calcClosest() (int, int) {
-	ts := b.ts
+func calc(bds []busDelta) {
+	ts := 100000000000000
 	for {
-		for _, bus := range b.buses {
-			if ts%bus == 0 {
-				return bus, ts
-			}
+		if okTs(bds, ts) {
+			fmt.Printf("First ts is %d\n", ts)
+			return
 		}
 		ts++
 	}
-	return 0, 0
 }
 
-func read(fname string) (busCalc, error) {
-	ret := busCalc{}
+func okTs(bds []busDelta, ts int) bool {
+	for _, bd := range bds {
+		if (ts+bd.delta)%bd.bus != 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func read(fname string) ([]busDelta, error) {
+	ret := []busDelta{}
 	file, err := os.Open(fname)
 	if err != nil {
 		return ret, err
@@ -41,17 +48,19 @@ func read(fname string) (busCalc, error) {
 
 	scanner := bufio.NewScanner(file)
 
+	lineNum := 0
 	for scanner.Scan() {
 		line := scanner.Text()
-		if ret.ts == 0 {
-			ret.ts = parseNum(line)
+		lineNum++
+		if lineNum == 1 {
+			continue
 		} else {
 			parts := strings.Split(line, ",")
-			for _, part := range parts {
+			for i, part := range parts {
 				if part == "x" {
 					continue
 				}
-				ret.buses = append(ret.buses, parseNum(part))
+				ret = append(ret, busDelta{parseNum(part), i})
 			}
 		}
 	}
@@ -79,13 +88,11 @@ func main() {
 	if *testFileFlag {
 		infile = "day13-sample.input"
 	}
-	b, err := read(infile)
+	bds, err := read(infile)
 	if err != nil {
 		fmt.Printf("Err: %v\n", err)
 		return
 	}
-	fmt.Printf("Buses %d\n", len(b.buses))
-	bus, ts := b.calcClosest()
-	delta := ts - b.ts
-	fmt.Printf("Bus %d, ts %d, delta %d mult %d\n", bus, ts, delta, bus*delta)
+	fmt.Printf("Buses %d\n", len(bds))
+	calc(bds)
 }
