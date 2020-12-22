@@ -15,8 +15,12 @@ var (
 )
 
 type ship struct {
-	angle int     // 0=east, 90=north
-	x, y  float64 // +y is north, +x=east
+	x, y int
+	wp   *waypoint
+}
+
+type waypoint struct {
+	x, y int
 }
 
 type action struct {
@@ -25,30 +29,45 @@ type action struct {
 }
 
 func (s ship) String() string {
-	return fmt.Sprintf("(%g, %g) %d deg", s.x, s.y, s.angle)
+	return fmt.Sprintf("(%d, %d) wp (%d, %d)", s.x, s.y, s.wp.x, s.wp.y)
 }
 
 func (s ship) manhattanDist() float64 {
-	return math.Abs(s.x) + math.Abs(s.y)
+	return math.Abs(float64(s.x)) + math.Abs(float64(s.y))
 }
 
 func (s *ship) move(a action) {
 	switch a.action {
 	case 'N':
-		s.y += float64(a.dist)
+		s.wp.y += a.dist
 	case 'S':
-		s.y -= float64(a.dist)
+		s.wp.y -= a.dist
 	case 'E':
-		s.x += float64(a.dist)
+		s.wp.x += a.dist
 	case 'W':
-		s.x -= float64(a.dist)
+		s.wp.x -= a.dist
 	case 'L':
-		s.angle += a.dist
+		s.wp.rotate(a.dist)
 	case 'R':
-		s.angle -= a.dist
+		s.wp.rotate(-a.dist)
 	case 'F':
-		s.x += float64(a.dist) * math.Cos(degToRads(s.angle))
-		s.y += float64(a.dist) * math.Sin(degToRads(s.angle))
+		s.x += a.dist * s.wp.x
+		s.y += a.dist * s.wp.y
+	}
+}
+
+func (w *waypoint) rotate(angle int) {
+	switch angle {
+	case -90, 270:
+		w.x, w.y = w.y, -w.x
+	case 180, -180:
+		w.x, w.y = -w.x, -w.y
+	case -270, 90:
+		w.x, w.y = -w.y, w.x
+	case 360, -360:
+		w.x, w.y = w.x, w.y
+	default:
+		fmt.Printf("Bad angle %d\n", angle)
 	}
 }
 
@@ -105,10 +124,10 @@ func main() {
 		return
 	}
 	fmt.Printf("Num actions %d\n", len(actions))
-	s := ship{}
+	s := ship{wp: &waypoint{x: 10, y: 1}}
 	for _, action := range actions {
 		s.move(action)
 		fmt.Printf("%s %s\n", action, s)
 	}
-	fmt.Printf("%g, %g = %g\n", s.x, s.y, s.manhattanDist())
+	fmt.Printf("%d, %d = %g\n", s.x, s.y, s.manhattanDist())
 }
