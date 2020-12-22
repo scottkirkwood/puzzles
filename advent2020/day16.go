@@ -16,6 +16,77 @@ type ticket struct {
 	names         map[string]ranges
 	yourTicket    []int
 	nearbyTickets [][]int
+	possible      []map[string]bool
+	order         []string
+}
+
+func (t *ticket) calculateOrder() {
+	t.order = make([]string, len(t.yourTicket))
+	t.possible = make([]map[string]bool, len(t.yourTicket))
+	for i := 0; i < len(t.yourTicket); i++ {
+		t.possible[i] = map[string]bool{}
+		for key, ranges := range t.names {
+			if t.matchRanges(i, ranges) {
+				t.possible[i][key] = true
+			}
+		}
+	}
+	changed := false
+	for {
+		changed = false
+		for i, m := range t.possible {
+			key := theOnlyKey(m)
+			if key != "" {
+				t.order[i] = key
+				t.zeroOut(key)
+				changed = true
+				break
+			}
+		}
+		if !changed {
+			break
+		}
+	}
+	product := 1
+	for i, key := range t.order {
+		fmt.Printf("%d: %v\n", i, key)
+		if strings.HasPrefix(key, "departure ") {
+			fmt.Printf("%d\n", t.yourTicket[i])
+			product *= t.yourTicket[i]
+		}
+	}
+	fmt.Printf("%d\n", product)
+}
+
+func theOnlyKey(m map[string]bool) string {
+	key := ""
+	for k, v := range m {
+		if v {
+			if key != "" {
+				return ""
+			}
+			key = k
+		}
+	}
+	return key
+}
+
+func (t *ticket) zeroOut(key string) {
+	for _, m := range t.possible {
+		m[key] = false
+	}
+}
+
+func (t ticket) matchRanges(index int, r ranges) bool {
+	if !r.inRange(t.yourTicket[index]) {
+		return false
+	}
+	for _, t := range t.nearbyTickets {
+		if t != nil && !r.inRange(t[index]) {
+			return false
+		}
+	}
+	return true
 }
 
 func (t ticket) badValues() []int {
@@ -28,6 +99,17 @@ func (t ticket) badValues() []int {
 		}
 	}
 	return ret
+}
+
+func (t *ticket) removeBadTickets() {
+	for i, values := range t.nearbyTickets {
+		for _, v := range values {
+			if !t.inRange(v) {
+				t.nearbyTickets[i] = nil
+				continue
+			}
+		}
+	}
 }
 
 func (t ticket) inRange(x int) bool {
@@ -147,6 +229,7 @@ func main() {
 		return
 	}
 	fmt.Printf("Tickets %d\n", len(tickets.names))
-	fmt.Printf("Ticket error bad nums %v\n", tickets.badValues())
 	fmt.Printf("Ticket error scanning rate %d\n", sum(tickets.badValues()))
+	tickets.removeBadTickets()
+	tickets.calculateOrder()
 }
