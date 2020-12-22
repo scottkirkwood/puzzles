@@ -15,18 +15,48 @@ var (
 )
 
 type machine struct {
-	mem     map[int64]int64
-	curMask string
+	mem      map[int64]int64
+	curMask  string
+	iterBits []int // 0 is the rightmost bit
 }
 
 func (m *machine) evaluate(inst instruction) {
 	if inst.memLoc > 0 {
-		//oldVal := m.mem[inst.memLoc]
-		val := inst.val & m.bitsToKeep()
-		val |= m.bitsToSet()
-		m.mem[inst.memLoc] = val
+		maxVal := m.iterMax()
+		for i := int64(0); i < maxVal; i++ {
+			x := m.onesFromMask() | (m.zeroFromMaskPassThrough() & inst.memLoc)
+			maskFrom := int64(1)
+			for j, to := range m.iterBits {
+				x |= (maskFrom & i) << (to - j)
+				maskFrom <<= 1
+			}
+			m.mem[x] = inst.val
+			fmt.Printf("%s\n", formatBits(x))
+		}
 	} else {
 		m.curMask = inst.mask
+		m.iterBits = calcIterBits(m.curMask)
+	}
+}
+
+func (m *machine) iterMax() int64 {
+	return (1 << len(m.iterBits))
+}
+
+func calcIterBits(mask string) []int {
+	ret := []int{}
+	for i, ch := range mask {
+		if ch == 'X' {
+			ret = append(ret, 35-i)
+		}
+	}
+	reverse(ret)
+	return ret
+}
+
+func reverse(s []int) {
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
 	}
 }
 
@@ -38,11 +68,11 @@ func (m *machine) sum() (ret int64) {
 }
 
 func (m machine) String(inst instruction) string {
-	return fmt.Sprintf("value:  %s\nmask:   %s\nresult: %s", formatBits(inst.val), m.curMask, formatBits(m.mem[inst.memLoc]))
+	return fmt.Sprintf("address: %s\nmask:    %s\nresult:  %s", formatBits(inst.memLoc), m.curMask, formatBits(m.mem[inst.memLoc]))
 }
 
 func formatBits(val int64) string {
-	return fmt.Sprintf("%036s", strconv.FormatInt(val, 2))
+	return fmt.Sprintf("%036s (%d)", strconv.FormatInt(val, 2), val)
 }
 
 type instruction struct {
@@ -103,12 +133,12 @@ func (m machine) bitsToSet() int64 {
 	return n
 }
 
-func (m machine) bitsToZero() int64 {
+func (m machine) zeroFromMaskPassThrough() int64 {
 	n, err := parseBits(strings.Map(func(r rune) rune {
 		if r == '0' {
-			return '0'
+			return '1'
 		}
-		return '1'
+		return '0'
 	}, m.curMask))
 	if err != nil {
 		fmt.Printf("Unable to parse bits to zero %q\n", m.curMask)
@@ -116,9 +146,9 @@ func (m machine) bitsToZero() int64 {
 	return n
 }
 
-func (m machine) bitsToKeep() int64 {
+func (m machine) onesFromMask() int64 {
 	n, err := parseBits(strings.Map(func(r rune) rune {
-		if r == 'X' {
+		if r == '1' {
 			return '1'
 		}
 		return '0'
@@ -165,9 +195,6 @@ func main() {
 
 	for _, inst := range instructions {
 		m.evaluate(inst)
-		if inst.memLoc != 0 {
-			fmt.Printf("%s\n\n", m.String(inst))
-		}
 	}
 	fmt.Printf("Mem sum %d\n", m.sum())
 }
