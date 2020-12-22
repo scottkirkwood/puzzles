@@ -38,9 +38,17 @@ func recurseParts(expr string) int {
 		return evalLtoR(expr)
 	}
 	left, parens, right := outerParens(expr)
-	fmt.Printf("[%q]  [%q]  [%q]\n", left, parens, right)
 	val := recurseParts(parens)
 	return recurseParts(fmt.Sprintf("%s %d %s", left, val, right))
+}
+
+func recurseParts2(expr string) int {
+	if !strings.Contains(expr, "(") {
+		return evalLtoR2(expr)
+	}
+	left, parens, right := outerParens(expr)
+	val := recurseParts2(parens)
+	return recurseParts2(fmt.Sprintf("%s %d %s", left, val, right))
 }
 
 func outerParens(expr string) (left, middle, right string) {
@@ -88,6 +96,15 @@ func evalLtoR(expr string) int {
 	return val
 }
 
+// This one + is higher precedence than *
+func evalLtoR2(expr string) int {
+	if !strings.Contains(expr, "*") {
+		return evalLtoR(expr)
+	}
+	parts := strings.SplitN(expr, "*", 2)
+	return evalLtoR2(parts[0]) * evalLtoR2(parts[1])
+}
+
 func tokenize(expr string) []string {
 	parts := exprRx.FindAllStringSubmatch(expr, -1)
 	ret := make([]string, 0, len(parts))
@@ -122,7 +139,7 @@ func main() {
 	}
 	sum := 0
 	for i, line := range lines {
-		val := recurseParts(line)
+		val := recurseParts2(line)
 		fmt.Printf("%d: %d = %q\n", i, val, line)
 		sum += val
 	}
