@@ -133,6 +133,7 @@ func parseNums(txt string) []int {
 	}
 	return ret
 }
+
 func parseNum(txt string) int {
 	num, err := strconv.Atoi(txt)
 	if err != nil {
