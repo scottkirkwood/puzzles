@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -114,45 +115,61 @@ func (m *menu) buildMaps() {
 }
 
 func (m menu) lowCounts() {
-	for k, v := range m.foodAlergens {
-		alergens := getTrueKeys(v)
-		fmt.Printf("%s: %s\n", k, strings.Join(alergens, ","))
-	}
 	fmt.Printf("\n")
-
-	possibles := map[string]bool{}
-	for k, v := range m.alergenFoods {
-		foods := getTrueKeys(v)
-		for _, food := range foods {
-			possibles[food] = true
-		}
-		fmt.Printf("%s: %s\n", k, strings.Join(foods, ","))
-	}
-
-	fmt.Printf("\n")
-
-	count := 0
-	impossibles := map[string]int{}
-
-	for food := range m.foodAlergens {
-		if possibles[food] {
-			continue
-		}
-		count++
-		impossibles[food] = 0
-	}
-	fmt.Printf("Count %d\n", count)
-
-	count = 0
-	for _, ing := range m.all {
-		for food := range impossibles {
-			if ing.foods[food] {
-				impossibles[food]++
-				count++
+	changed := true
+	for changed {
+		changed = false
+		for k, v := range m.alergenFoods {
+			onlyFood := getOnlyKey(v)
+			if onlyFood != "" {
+				changed = m.zapOthers(k, onlyFood)
 			}
 		}
 	}
-	fmt.Printf("Final count %d\n", count)
+	finalMap := map[string]string{}
+	for k, v := range m.alergenFoods {
+		foods := getTrueKeys(v)
+		fmt.Printf("%s: %s\n", k, strings.Join(foods, ","))
+		finalMap[k] = foods[0]
+	}
+	toSort := []string{}
+	for k := range m.alergenFoods {
+		toSort = append(toSort, k)
+	}
+	sort.Strings(toSort)
+	final := []string{}
+	for _, k := range toSort {
+		final = append(final, finalMap[k])
+	}
+	fmt.Printf("%s\n", strings.Join(final, ","))
+
+}
+
+// Zap food for all other alergens except `alergen`
+// returns true is something needed to be zapped
+func (m *menu) zapOthers(alergen string, food string) bool {
+	zapped := false
+	for k := range m.alergenFoods {
+		if k != alergen && m.alergenFoods[k][food] {
+			m.alergenFoods[k][food] = false
+			zapped = true
+		}
+	}
+	return zapped
+}
+
+func getOnlyKey(m map[string]bool) string {
+	key := ""
+	for k, v := range m {
+		if v {
+			if key != "" {
+				// more than one key with bool true
+				return ""
+			}
+			key = k
+		}
+	}
+	return key
 }
 
 func (i ingredients) String() string {
