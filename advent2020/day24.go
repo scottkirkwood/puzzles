@@ -12,7 +12,9 @@ import (
 var testFileFlag = flag.Bool("t", false, "Use the test file")
 
 type floor struct {
-	tiles map[hex]bool
+	dayNum int
+	tiles  map[hex]bool // false = white, true = black
+	next   map[hex]bool
 }
 
 type hex struct {
@@ -32,6 +34,69 @@ const (
 var axialDirections = []hex{
 	hex{+1, 0}, hex{+1, -1}, hex{0, -1},
 	hex{-1, 0}, hex{-1, +1}, hex{0, +1},
+}
+
+func newFloor() floor {
+	return floor{
+		dayNum: 1,
+		tiles:  map[hex]bool{},
+		next:   map[hex]bool{},
+	}
+}
+
+func (f *floor) generation() {
+	f.next = make(map[hex]bool, len(f.tiles))
+	q1, r1, q2, r2 := f.extents()
+	for r := r1 - 1; r <= r2+1; r++ {
+		for q := q1 - 1; q <= q2+1; q++ {
+			hx := hex{q, r}
+			black := f.tiles[hx]
+			n := f.countAdjacentBlack(hx)
+			if black {
+				if !(n == 0 || n > 2) {
+					f.next[hx] = true
+				}
+			} else if n == 2 {
+				f.next[hx] = true
+			}
+		}
+	}
+	f.tiles = f.next
+}
+
+func (f floor) extents() (q1, r1, q2, r2 int) {
+	q1, r1 = 9999999, 9999999
+	q2, r2 = -9999999, -9999999
+	for hx, black := range f.tiles {
+		if !black {
+			continue
+		}
+		if hx.q < q1 {
+			q1 = hx.q
+		}
+		if hx.r < r1 {
+			r1 = hx.r
+		}
+		if hx.q > q2 {
+			q2 = hx.q
+		}
+		if hx.r > r2 {
+			r2 = hx.r
+		}
+	}
+	return q1, r1, q2, r2
+}
+
+func (f floor) countAdjacentBlack(hx hex) int {
+	count := 0
+	for _, dir := range axialDirections {
+		hx2 := hx
+		hx2.move(dir)
+		if f.tiles[hx2] {
+			count++
+		}
+	}
+	return count
 }
 
 func (f *floor) flip(hx hex) {
@@ -123,9 +188,7 @@ func main() {
 		return
 	}
 	fmt.Printf("%d\n", len(directions))
-	f := floor{
-		tiles: map[hex]bool{},
-	}
+	f := newFloor()
 	for _, moves := range directions {
 		start := hex{0, 0}
 		for _, move := range moves {
@@ -134,4 +197,8 @@ func main() {
 		f.flip(start)
 	}
 	fmt.Printf("Black tiles %d\n", f.countBlack())
+	for day := 1; day <= 100; day++ {
+		f.generation()
+		fmt.Printf("Day %d: %d\n", day, f.countBlack())
+	}
 }
