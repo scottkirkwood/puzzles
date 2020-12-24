@@ -12,6 +12,11 @@ import (
 
 var testFileFlag = flag.Bool("t", false, "Use the test file")
 
+// In order to do part 2 this needs to be a (singly) linked list
+// Each node has two pointers one that points to the next element which
+// finally points back to the first element.
+// The other points to the next lower number.  With these two changes
+// the algorithm will be fast
 type game struct {
 	moveNum int
 	pos     int
@@ -108,6 +113,10 @@ func (g game) formatCups() string {
 		} else {
 			ret = append(ret, fmt.Sprintf("%d ", num))
 		}
+		if i > 10 {
+			ret = append(ret, "...")
+			break
+		}
 	}
 	return strings.Join(ret, " ")
 }
@@ -167,6 +176,9 @@ func read(fname string) (game, error) {
 		for _, ch := range line {
 			ret.numbers = append(ret.numbers, parseNum(string(ch)))
 		}
+		for i := len(ret.numbers) + 1; i <= 1000000; i++ {
+			ret.numbers = append(ret.numbers, i)
+		}
 	}
 	if err := scanner.Err(); err != nil {
 		return ret, err
@@ -198,8 +210,7 @@ func main() {
 		return
 	}
 	for i := 0; i < 100; i++ {
-		fmt.Printf("%s\n", game.String())
 		game.move()
 	}
-	fmt.Printf("%s\n", game.afterOne())
+	//fmt.Printf("%s\n", game.afterOne())
 }
