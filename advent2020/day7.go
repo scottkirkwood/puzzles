@@ -101,6 +101,28 @@ func trace(bags []bag, toTrace string) int {
 	return len(couldContain)
 }
 
+func makeBagMap(bags []bag) map[string]bag {
+	ret := make(map[string]bag, len(bags))
+	for _, bag := range bags {
+		ret[bag.color] = bag
+	}
+	return ret
+}
+
+func recurseBags(bags map[string]bag, cur string) int {
+	if len(bags[cur].contains) == 0 {
+		fmt.Printf("%s has 0 other bags\n", cur)
+		return 0
+	}
+	count := 0
+	for color, num := range bags[cur].contains {
+		childCount := recurseBags(bags, color) + 1
+		fmt.Printf("> %s has %d*%d = %d bags\n", color, num, childCount, num*childCount)
+		count += num * childCount
+	}
+	return count
+}
+
 func main() {
 	flag.Parse()
 
@@ -117,4 +139,8 @@ func main() {
 	}
 	fmt.Printf("Rows %d\n", len(bags))
 	fmt.Printf("Number of bag colors that can contain %d\n", trace(bags, "shiny gold"))
+
+	bagMap := makeBagMap(bags)
+
+	fmt.Printf("Number of bags inside shiny gold: %d\n", recurseBags(bagMap, "shiny gold"))
 }
