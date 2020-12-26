@@ -134,12 +134,13 @@ func verbose(context, val string) {
 func validIntRange(txt string, low, high int) bool {
 	num, err := strconv.Atoi(txt)
 	if err != nil {
+		fmt.Printf("Unexpected number %q\n", txt)
 		return false
 	}
 	return num >= low && num <= high
 }
 
-var heightRx = regexp.MustCompile(`(\d+)(cm|in)`)
+var heightRx = regexp.MustCompile(`^(\d+)(cm|in)$`)
 
 func validHeight(txt string) bool {
 	parts := heightRx.FindStringSubmatch(txt)
@@ -151,11 +152,13 @@ func validHeight(txt string) bool {
 		return validIntRange(parts[1], 150, 193)
 	case "in":
 		return validIntRange(parts[1], 59, 76)
+	default:
+		fmt.Printf("Unexpected height %q\n", parts[2])
 	}
 	return false
 }
 
-var hairColorRx = regexp.MustCompile(`#[0-9a-f]{6}`)
+var hairColorRx = regexp.MustCompile(`^#[0-9a-f]{6}$`)
 
 func validHairColor(txt string) bool {
 	return hairColorRx.MatchString(txt)
@@ -175,7 +178,7 @@ func validEyeColor(txt string) bool {
 	return eyeColors[txt]
 }
 
-var validPidRx = regexp.MustCompile(`[0-9]{9}`)
+var validPidRx = regexp.MustCompile(`^[0-9]{9}$`)
 
 func validPid(txt string) bool {
 	return validPidRx.MatchString(txt)
@@ -232,4 +235,5 @@ func main() {
 		}
 	}
 	fmt.Printf("Valid %d\n", valid)
+	fmt.Printf("It's not 148\n")
 }
