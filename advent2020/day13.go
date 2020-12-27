@@ -19,14 +19,18 @@ type busDelta struct {
 }
 
 func calc(bds []busDelta) {
-	ts := 100000000000000
-	for {
-		if okTs(bds, ts) {
-			fmt.Printf("First ts is %d\n", ts)
-			return
+	ts := 0
+	gcf := 1
+	for _, bd := range bds {
+		for {
+			if (ts+bd.delta)%bd.bus == 0 {
+				break
+			}
+			ts += gcf
 		}
-		ts++
+		gcf *= bd.bus
 	}
+	fmt.Printf("ts %d\n", ts)
 }
 
 func okTs(bds []busDelta, ts int) bool {
