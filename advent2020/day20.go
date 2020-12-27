@@ -1,3 +1,4 @@
+// See https://adventofcode.com/2020/day/20 for problem decscription
 package main
 
 import (
@@ -18,15 +19,15 @@ const (
 )
 
 const (
-	DEG0_RIGHT = iota
-	DEG0_BOTTOM
-	DEG0_LEFT
-	DEG0_TOP
-	FLIP0_RIGHT
-	FLIP0_BOTTOM
-	FLIP0_LEFT
-	FLIP0_TOP
-	COUNT_SIG
+	deg0Right = iota
+	deg0Bottom
+	deg0Left
+	deg0Top
+	flip0Right
+	flip0Bottom
+	flip0Left
+	flip0Top
+	sigCount
 )
 
 type image struct {
@@ -36,7 +37,7 @@ type image struct {
 type tile struct {
 	id        int
 	pixels    [][]byte
-	signature [COUNT_SIG]string
+	signature [sigCount]string
 }
 
 func (im *image) addTile(num int) *tile {
@@ -114,15 +115,15 @@ func (t *tile) addRow(txt string) {
 }
 
 func (t *tile) calcSignatures() {
-	t.signature[DEG0_TOP] = t.fromTo(0, 0, 1, 0)
-	t.signature[DEG0_RIGHT] = t.fromTo(1, 0, 0, 1)
-	t.signature[DEG0_BOTTOM] = t.fromTo(1, 1, -1, 0)
-	t.signature[DEG0_LEFT] = t.fromTo(0, 1, 0, -1)
+	t.signature[deg0Top] = t.fromTo(0, 0, 1, 0)
+	t.signature[deg0Right] = t.fromTo(1, 0, 0, 1)
+	t.signature[deg0Bottom] = t.fromTo(1, 1, -1, 0)
+	t.signature[deg0Left] = t.fromTo(0, 1, 0, -1)
 
-	t.signature[FLIP0_TOP] = t.fromTo(1, 0, -1, 0)
-	t.signature[FLIP0_RIGHT] = t.fromTo(1, 1, 0, -1)
-	t.signature[FLIP0_BOTTOM] = t.fromTo(0, 1, 1, 0)
-	t.signature[FLIP0_LEFT] = t.fromTo(0, 0, 0, 1)
+	t.signature[flip0Top] = t.fromTo(1, 0, -1, 0)
+	t.signature[flip0Right] = t.fromTo(1, 1, 0, -1)
+	t.signature[flip0Bottom] = t.fromTo(0, 1, 1, 0)
+	t.signature[flip0Left] = t.fromTo(0, 0, 0, 1)
 }
 
 func formatBits(val int) string {
@@ -201,22 +202,22 @@ func read(fname string) (image, error) {
 
 func posToTxt(pos int) string {
 	switch pos {
-	case DEG0_RIGHT:
-		return "DEG0_RIGHT"
-	case DEG0_BOTTOM:
-		return "DEG0_BOTTOM"
-	case DEG0_LEFT:
-		return "DEG0_LEFT"
-	case DEG0_TOP:
-		return "DEG0_TOP"
-	case FLIP0_RIGHT:
-		return "FLIP0_RIGHT"
-	case FLIP0_BOTTOM:
-		return "FLIP0_BOTTOM"
-	case FLIP0_LEFT:
-		return "FLIP0_LEFT"
-	case FLIP0_TOP:
-		return "FLIP0_TOP"
+	case deg0Right:
+		return "deg0Right"
+	case deg0Bottom:
+		return "deg0Bottom"
+	case deg0Left:
+		return "deg0Left"
+	case deg0Top:
+		return "deg0Top"
+	case flip0Right:
+		return "flip0Right"
+	case flip0Bottom:
+		return "flip0Bottom"
+	case flip0Left:
+		return "flip0Left"
+	case flip0Top:
+		return "flip0Top"
 	}
 	return "bad pos"
 }

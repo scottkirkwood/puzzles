@@ -1,3 +1,4 @@
+// See https://adventofcode.com/2020/day/21 for problem decscription
 package main
 
 import (
@@ -212,7 +213,7 @@ func read(fname string) ([]ingredients, error) {
 
 		parts := rowRx.FindStringSubmatch(line)
 		if len(parts) != 3 {
-			return nil, fmt.Errorf("Unable to parse %q\n", line)
+			return nil, fmt.Errorf("unable to parse %q", line)
 		}
 		ret = append(ret, newIngredients(parts[1], parts[2]))
 	}

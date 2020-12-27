@@ -1,3 +1,4 @@
+// See https://adventofcode.com/2020/day/24 for problem decscription
 package main
 
 import (
@@ -22,13 +23,13 @@ type hex struct {
 }
 
 const (
-	E = iota
-	NE
-	NW
-	W
-	SW
-	SE
-	NUM_DIRECTIONS
+	e = iota
+	ne
+	nw
+	w
+	sw
+	se
+	numDirections
 )
 
 var axialDirections = []hex{
@@ -121,20 +122,20 @@ func (h *hex) move(hx hex) {
 func letterToDirection(dir string) int {
 	switch dir {
 	case "e":
-		return E
+		return e
 	case "ne":
-		return NE
+		return ne
 	case "nw":
-		return NW
+		return nw
 	case "w":
-		return W
+		return w
 	case "sw":
-		return SW
+		return sw
 	case "se":
-		return SE
+		return se
 	}
 	fmt.Printf("Invalid direction %q\n", dir)
-	return NUM_DIRECTIONS
+	return numDirections
 }
 
 var directionRx = regexp.MustCompile(`(e|se|sw|w|nw|ne)`)

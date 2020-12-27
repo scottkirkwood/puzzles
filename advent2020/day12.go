@@ -1,3 +1,4 @@
+// See https://adventofcode.com/2020/day/12 for problem decscription
 package main
 
 import (
@@ -95,11 +96,11 @@ func read(fname string) ([]action, error) {
 		line := scanner.Text()
 		parts := actionRx.FindStringSubmatch(line)
 		if len(parts) != 3 {
-			return nil, fmt.Errorf("unable to parse %q\n", line)
+			return nil, fmt.Errorf("unable to parse %q", line)
 		}
 		num, err := strconv.Atoi(parts[2])
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse number %q\n", parts[2])
+			return nil, fmt.Errorf("unable to parse number %q", parts[2])
 		}
 		ret = append(ret, action{byte(parts[1][0]), num})
 	}

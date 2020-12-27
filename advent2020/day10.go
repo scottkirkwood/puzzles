@@ -1,3 +1,4 @@
+// See https://adventofcode.com/2020/day/10 for problem decscription
 package main
 
 import (
@@ -52,7 +53,7 @@ func newJolty(nums []int) jolty {
 
 	j := jolty{
 		orig:        nums,
-		deviceJolts: max+3,
+		deviceJolts: max + 3,
 		nums:        make([]bool, max+1),
 	}
 	for _, v := range nums {

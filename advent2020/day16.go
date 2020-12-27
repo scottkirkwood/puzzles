@@ -1,3 +1,4 @@
+// See https://adventofcode.com/2020/day/16 for problem decscription
 package main
 
 import (

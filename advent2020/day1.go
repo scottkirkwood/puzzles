@@ -1,3 +1,4 @@
+// See https://adventofcode.com/2020/day/1 for problem decscription
 package main
 
 import (
@@ -7,7 +8,7 @@ import (
 	"strconv"
 )
 
-func read(fname string) ([]int, error) {
+func readInput(fname string) ([]int, error) {
 	file, err := os.Open(fname)
 	if err != nil {
 		return nil, err
@@ -31,7 +32,7 @@ func read(fname string) ([]int, error) {
 	return ret, nil
 }
 
-func bruteForce(nums []int) {
+func bruteForceA(nums []int) {
 	fmt.Printf("Brute forcing\n")
 	for a := 0; a < len(nums)-1; a++ {
 		for b := a + 1; b < len(nums); b++ {
@@ -46,10 +47,10 @@ func bruteForce(nums []int) {
 
 func main() {
 	fmt.Printf("Day1\n")
-	nums, err := read("day1.input")
+	nums, err := readInput("day1.input")
 	if err != nil {
 		fmt.Printf("Error %v\n", err)
 	}
 	fmt.Printf("%d values\n", len(nums))
-	bruteForce(nums)
+	bruteForceA(nums)
 }

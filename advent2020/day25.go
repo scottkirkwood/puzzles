@@ -1,3 +1,4 @@
+// See https://adventofcode.com/2020/day/25 for problem decscription
 package main
 
 import (
@@ -34,7 +35,7 @@ func (c *crypt) findLoopSize() int {
 		val *= sn
 		val %= divider
 		if val == c.publicKey {
-			c.secretLoopSize = loopSize+1
+			c.secretLoopSize = loopSize + 1
 			break
 		}
 		if loopSize%10000 == 0 {

@@ -1,3 +1,4 @@
+// See https://adventofcode.com/2020/day/19 for problem decscription
 package main
 
 import (
@@ -64,11 +65,11 @@ func (p problem) recurseAll(rules []int) string {
 func (p *problem) addRule(line string) error {
 	parts := rowRx.FindStringSubmatch(line)
 	if len(parts) != 3 {
-		return fmt.Errorf("bad rule %q\n", line)
+		return fmt.Errorf("bad rule %q", line)
 	}
 	key, remainder := parseNum(parts[1]), parts[2]
 	if _, ok := p.rules[key]; ok {
-		return fmt.Errorf("two rules with same key %d\n", key)
+		return fmt.Errorf("two rules with same key %d", key)
 	}
 
 	parts = charRx.FindStringSubmatch(remainder)

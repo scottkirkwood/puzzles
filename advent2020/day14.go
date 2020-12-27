@@ -1,3 +1,4 @@
+// See https://adventofcode.com/2020/day/14 for problem decscription
 package main
 
 import (
@@ -106,7 +107,7 @@ func read(fname string) ([]instruction, error) {
 		} else {
 			parts = memRx.FindStringSubmatch(line)
 			if len(parts) != 3 {
-				return nil, fmt.Errorf("Unable to parse %q\n", line)
+				return nil, fmt.Errorf("unable to parse %q", line)
 			}
 			ret = append(ret, instruction{
 				memLoc: parseNum(parts[1]),

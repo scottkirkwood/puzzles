@@ -1,3 +1,4 @@
+// See https://adventofcode.com/2020/day/7 for problem decscription
 package main
 
 import (
@@ -89,7 +90,7 @@ func trace(bags []bag, toTrace string) int {
 				couldContain[bag.color] = true
 				changed = true
 			}
-			for key, _ := range bag.contains {
+			for key := range bag.contains {
 				if couldContain[key] {
 					couldContain[bag.color] = true
 					changed = true
