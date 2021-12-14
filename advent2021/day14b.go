@@ -17,6 +17,7 @@ var (
 type puzzle struct {
 	pairs map[string]string
 	cur   []string
+	sums  map[string]int
 }
 
 func read(fname string) (*puzzle, error) {
@@ -28,6 +29,7 @@ func read(fname string) (*puzzle, error) {
 	scanner := bufio.NewScanner(file)
 	p := puzzle{
 		pairs: make(map[string]string),
+		sums:  make(map[string]int),
 	}
 	for scanner.Scan() {
 		lineStr := scanner.Text()
@@ -45,6 +47,12 @@ func read(fname string) (*puzzle, error) {
 			p.pairs[key] = val
 		}
 	}
+
+	//p.sums[" "+p.cur[0]] = 1
+	//p.sums[p.cur[len(p.cur)-1]+" "] = 1
+	for i := 0; i < len(p.cur)-1; i++ {
+		p.sums[p.cur[i]+p.cur[i+1]]++
+	}
 	return &p, nil
 }
 
@@ -53,48 +61,68 @@ func (p *puzzle) Len() int {
 }
 
 func (p *puzzle) Print() {
-	fmt.Printf("%s\n", strings.Join(p.cur, ""))
+	fmt.Printf("%v\n", p.sums)
+}
+
+func copyMap(cur map[string]int) map[string]int {
+	ret := make(map[string]int, len(cur))
+	for chch, _ := range cur {
+		ret[chch] = 0
+	}
+	return ret
 }
 
 func (p *puzzle) generate() {
-	next := make([]string, 0, len(p.cur)*2)
-	next = append(next, p.cur[0])
-	for i := 0; i < len(p.cur)-1; i++ {
-		pair := p.cur[i] + p.cur[i+1]
-		insert, ok := p.pairs[pair]
+	newSums := copyMap(p.sums)
+	for chch, count := range p.sums {
+		toCh, ok := p.pairs[chch]
 		if ok {
-			next = append(next, insert, p.cur[i+1])
+			//newSums[chch] -= count
+			leftKey := string(chch[0]) + toCh
+			rightKey := toCh + string(chch[1])
+			newSums[leftKey] += count
+			newSums[rightKey] += count
 		} else {
-			next = append(next, p.cur[i+1])
+			//		newSums[chch] = count
 		}
 	}
-	p.cur = next
+	p.sums = newSums
 }
 
 func (p *puzzle) score() int {
 	freq := map[string]int{}
-	for _, ch := range p.cur {
-		freq[ch]++
+	for chch, count := range p.sums {
+		freq[string(chch[0])] += count
+		freq[string(chch[1])] += count
 	}
 	min, max := 1<<60, 0
 	minCh, maxCh := "", ""
-	for k, v := range freq {
+	for ch, v := range freq {
+		v /= 2
+		if ch == " " {
+			continue
+		}
 		if v < min {
 			min = v
-			minCh = k
+			minCh = ch
 		}
 		if v > max {
 			max = v
-			maxCh = k
+			maxCh = ch
 		}
 	}
-	fmt.Printf("Min %s: %d, Max %s: %d\n", minCh, min, maxCh, max)
-	return max - min
+	fmt.Printf("Max %q: %d, Min %q: %d\n", maxCh, max, minCh, min)
+	// 3390034818251 too high
+	// 3390034818250 too high
+	// 3390034818245 too low
+	// 3390034818249 answer!
+	return int(max - min)+1
 }
 
 func (p *puzzle) calculate() int {
 	p.Print()
 	for i := 0; i < *stepsFlag; i++ {
+		fmt.Printf("Starting step %d\n", i)
 		p.generate()
 		p.Print()
 	}
@@ -120,7 +148,7 @@ func parseInt(txt string) int {
 func main() {
 	flag.Parse()
 
-	fmt.Printf("Day 14a\n")
+	fmt.Printf("Day 14b\n")
 	infile := "day14.input"
 	if *testFileFlag {
 		infile = "day14-sample.input"
