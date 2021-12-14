@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	testFileFlag = flag.Int("t", 1, "Use the test file N, 0 is the main one")
+	testFileFlag = flag.Int("t", 0, "Use the test file N, 0 is the main one")
 )
 
 type puzzle struct {
@@ -69,10 +69,10 @@ func (p *puzzle) traverse(node string) {
 		return
 	}
 	if strings.ToLower(node) == node {
-		if p.didNode[node] > 2 {
+		if p.didNode[node] > 1 {
 			return
 		}
-		if p.containsATwoVisit() {
+		if p.didNode[node] == 1 && p.containsATwoVisit() {
 			return
 		} else {
 			p.didNode[node]++
