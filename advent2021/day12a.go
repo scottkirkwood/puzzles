@@ -15,7 +15,10 @@ var (
 
 type puzzle struct {
 	// edges is the from-to directional edges
-	edges map [string]string
+	edges map[string][]string
+
+	paths   int
+	didNode map[string]bool
 }
 
 func read(fname string) (*puzzle, error) {
@@ -25,14 +28,18 @@ func read(fname string) (*puzzle, error) {
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
-	ret := puzzle{}
+	ret := puzzle{
+		edges:   make(map[string][]string),
+		paths:   0,
+		didNode: make(map[string]bool),
+	}
 	for scanner.Scan() {
 		lineStr := scanner.Text()
 		parts := strings.Split(lineStr, "-")
-		ret.edges[parts[0]]=parts[1]
-		if parts[0] != "start" || parts[1] != "end"
-		  ret.edges[parts[1]] = parts[0]
-	  }
+		ret.edges[parts[0]] = append(ret.edges[parts[0]], parts[1])
+		if parts[0] != "start" && parts[1] != "end" {
+			ret.edges[parts[1]] = append(ret.edges[parts[1]], parts[0])
+		}
 	}
 	return &ret, nil
 }
@@ -42,79 +49,32 @@ func (p *puzzle) Len() int {
 }
 
 func (p *puzzle) Print() {
-	fmt.Printf("After step %d:\n", p.step)
-	for y := 0; y < p.h; y++ {
-		for x := 0; x < p.w; x++ {
-			pt := point{x, y}
-			val := p.getXY(pt)
-			if val == 0 {
-				fmt.Printf("\u001b[1m0\u001b[0m")
-			} else {
-				fmt.Printf("%d", val)
-			}
-		}
-		fmt.Printf("\n")
-	}
-	fmt.Printf("\n")
-}
-
-func (p *puzzle) incNeighbours(pt point) (toZero []point) {
-	toZero = append(toZero, pt)
-	for dy := -1; dy <= 1; dy++ {
-		for dx := -1; dx <= 1; dx++ {
-			if dx == 0 && dy == 0 {
-				continue
-			}
-			pt := point{pt.x + dx, pt.y + dy}
-			if p.incXY(pt) > 9 {
-				p.setXY(pt, 0)
-				p.flashes++
-				toZero = append(toZero, p.incNeighbours(pt)...)
-			}
-		}
-	}
-	return toZero
-}
-
-func (p *puzzle) propFlashes() {
-	for {
-		toZero := []point{}
-		for y := 0; y < p.h; y++ {
-			for x := 0; x < p.w; x++ {
-				pt := point{x, y}
-				if p.getXY(pt) > 9 {
-					p.setXY(pt, 0)
-					p.flashes++
-					toZero = append(toZero, p.incNeighbours(pt)...)
-				}
-			}
-		}
-		if len(toZero) == 0 {
-			return
-		}
-		for _, pt := range toZero {
-			p.setXY(pt, 0)
-		}
+	for k, v := range p.edges {
+		fmt.Printf("%s->%s\n", k, v)
 	}
 }
 
-func (p *puzzle) generation() {
-	for y := 0; y < p.h; y++ {
-		for x := 0; x < p.w; x++ {
-			p.incXY(point{x, y})
-		}
+func (p *puzzle) traverse(node string) {
+	if node == "end" {
+		p.paths++
+		return
 	}
-	p.propFlashes()
-	p.step++
+	if p.didNode[node] {
+		return
+	}
+	if strings.ToLower(node) == node {
+		p.didNode[node] = true
+	}
+	for _, childNode := range p.edges[node] {
+		p.traverse(childNode)
+	}
+	p.didNode[node] = false
 }
 
 func (p *puzzle) calculate() int {
 	p.Print()
-	for step := 0; step < *numStepsFlag; step++ {
-		p.generation()
-		p.Print()
-	}
-	return p.flashes
+	p.traverse("start")
+	return p.paths
 }
 
 func parseInts(nums []string) []int {
