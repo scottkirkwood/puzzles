@@ -14,7 +14,7 @@ var (
 )
 
 type puzzle struct {
-	cave   grid
+	cave grid
 }
 
 type grid struct {
@@ -26,15 +26,83 @@ type point struct {
 	x, y int
 }
 
+type traverse struct {
+	cave       *grid
+	visited    map[point]bool
+	points     []point
+	bestPoints []point
+	minScore   int
+	curScore   int
+}
+
 func (g *grid) get(pt point) int {
-   if !g.inBounds(pt) {
-	   return -1
-   }
-   return g.vals[pt.y][pt.x]
+	if !g.inBounds(pt) {
+		return -1
+	}
+	return g.vals[pt.y][pt.x]
 }
 
 func (g *grid) inBounds(pt point) bool {
 	return pt.x >= 0 && pt.y >= 0 && pt.x < g.w && pt.y < g.h
+}
+
+func (g *grid) calcScore(points []point) int {
+	score := 0
+	for _, pt := range points {
+		score += g.get(pt)
+	}
+	return score
+}
+
+func (g *grid) Print() {
+	for y := 0; y < g.h; y++ {
+		for x := 0; x < g.w; x++ {
+			fmt.Printf("%d", g.get(point{x, y}))
+		}
+		fmt.Printf("\n")
+	}
+	fmt.Printf("\n")
+}
+
+func newTraverse(cave *grid) *traverse {
+	return &traverse{
+		cave:     cave,
+		visited:  make(map[point]bool),
+		minScore: 1 << 62,
+	}
+}
+
+func (t *traverse) atExit(pt point) bool {
+	return pt.x == t.cave.w-1 && pt.y == t.cave.h-1
+}
+
+func (t *traverse) generate(pt point) {
+	if t.atExit(pt) {
+		score := t.cave.calcScore(t.points)
+		if score < t.minScore {
+			t.minScore = score
+			t.bestPoints = make([]point, len(t.points))
+			copy(t.bestPoints, t.points)
+			fmt.Printf("%d: %v\n", t.minScore, t.bestPoints)
+		}
+		return
+	}
+	for _, dxy := range []point{point{1, 0}, point{0, 1}} {
+		pt := point{pt.x + dxy.x, pt.y + dxy.y}
+		if !t.cave.inBounds(pt) || t.visited[pt] {
+			continue
+		}
+		t.points = append(t.points, pt)
+		t.visited[pt] = true
+		val := t.cave.get(pt)
+		t.curScore += val
+		if t.curScore <= t.minScore {
+			t.generate(pt)
+		}
+		t.curScore -= val
+		t.visited[pt] = false
+		t.points = t.points[0 : len(t.points)-1]
+	}
 }
 
 func read(fname string) (*puzzle, error) {
@@ -44,12 +112,13 @@ func read(fname string) (*puzzle, error) {
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
-	p := puzzle{
-	}
+	p := puzzle{}
 	for scanner.Scan() {
 		lineStr := scanner.Text()
 		p.cave.vals = append(p.cave.vals, parseInts(strings.Split(lineStr, "")))
 	}
+	p.cave.h = len(p.cave.vals)
+	p.cave.w = len(p.cave.vals[0])
 	return &p, nil
 }
 
@@ -60,11 +129,13 @@ func (p *puzzle) Len() int {
 func (p *puzzle) Print() {
 }
 
-func (p *puzzle) generate() {
-}
-
 func (p *puzzle) calculate() int {
-	return 0
+	tr := newTraverse(&p.cave)
+	p.cave.Print()
+	tr.generate(point{0, 0})
+	// 1077 too high
+	// 1076 too high
+	return tr.minScore
 }
 
 func parseInts(nums []string) []int {
