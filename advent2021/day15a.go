@@ -14,7 +14,27 @@ var (
 )
 
 type puzzle struct {
-	grid   [][]int
+	cave   grid
+}
+
+type grid struct {
+	w, h int
+	vals [][]int
+}
+
+type point struct {
+	x, y int
+}
+
+func (g *grid) get(pt point) int {
+   if !g.inBounds(pt) {
+	   return -1
+   }
+   return g.vals[pt.y][pt.x]
+}
+
+func (g *grid) inBounds(pt point) bool {
+	return pt.x >= 0 && pt.y >= 0 && pt.x < g.w && pt.y < g.h
 }
 
 func read(fname string) (*puzzle, error) {
@@ -28,12 +48,13 @@ func read(fname string) (*puzzle, error) {
 	}
 	for scanner.Scan() {
 		lineStr := scanner.Text()
+		p.cave.vals = append(p.cave.vals, parseInts(strings.Split(lineStr, "")))
 	}
 	return &p, nil
 }
 
 func (p *puzzle) Len() int {
-	return len(p.grid)
+	return len(p.cave.vals)
 }
 
 func (p *puzzle) Print() {
