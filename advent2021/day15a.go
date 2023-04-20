@@ -78,30 +78,30 @@ func (t *traverse) atExit(pt point) bool {
 
 func (t *traverse) generate(pt point) {
 	if t.atExit(pt) {
-		score := t.cave.calcScore(t.points)
+		score := t.curScore // t.cave.calcScore(t.points)
 		if score < t.minScore {
 			t.minScore = score
-			t.bestPoints = make([]point, len(t.points))
-			copy(t.bestPoints, t.points)
-			fmt.Printf("%d: %v\n", t.minScore, t.bestPoints)
+			// t.bestPoints = make([]point, len(t.points))
+			//copy(t.bestPoints, t.points)
+			fmt.Printf("%d\n", t.minScore)
 		}
 		return
 	}
 	for _, dxy := range []point{point{1, 0}, point{0, 1}} {
 		pt := point{pt.x + dxy.x, pt.y + dxy.y}
-		if !t.cave.inBounds(pt) || t.visited[pt] {
+		if !t.cave.inBounds(pt) { // || t.visited[pt] {
 			continue
 		}
-		t.points = append(t.points, pt)
-		t.visited[pt] = true
+		// t.points = append(t.points, pt)
+		//t.visited[pt] = true
 		val := t.cave.get(pt)
 		t.curScore += val
 		if t.curScore <= t.minScore {
 			t.generate(pt)
 		}
 		t.curScore -= val
-		t.visited[pt] = false
-		t.points = t.points[0 : len(t.points)-1]
+		// t.visited[pt] = false
+		// t.points = t.points[0 : len(t.points)-1]
 	}
 }
 
@@ -135,6 +135,8 @@ func (p *puzzle) calculate() int {
 	tr.generate(point{0, 0})
 	// 1077 too high
 	// 1076 too high
+	// 1069 too high
+	// 1058 wrong
 	return tr.minScore
 }
 
